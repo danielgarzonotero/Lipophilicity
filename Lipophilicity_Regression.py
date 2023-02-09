@@ -137,12 +137,12 @@ def predict(model, device, dataloader):
 
 
 #%% Data Loader
-data_set = Lipophilicity('Lipophilicity/lipo_fp_processed.csv') 
+data_set = Lipophilicity('lipo_processed.csv') 
 
-bat_size = 20
+bat_size = 50
 
 # important to use split for test data and validation data
-size_train = int(len(data_set) * 0.3) #TODO Create versions of the dataset, with data split into 2, 3, 5, and 10 bins?????
+size_train = int(len(data_set) * 0.7) #TODO Create versions of the dataset, with data split into 2, 3, 5, and 10 bins?????
 size_val = len(data_set) - size_train
 
 train_set, val_set = torch.utils.data.random_split(data_set, 
