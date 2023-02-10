@@ -1,4 +1,5 @@
 #%% Libraries
+import time
 import pandas as pd
 import torch 
 import torch.nn as nn
@@ -10,6 +11,8 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from torch.utils.data import DataLoader, Dataset
+
+start_time = time.time()
 
 #%% Device
 if torch.cuda.is_available():
@@ -142,7 +145,7 @@ data_set = Lipophilicity('lipo_processed.csv')
 bat_size = 50
 
 # important to use split for test data and validation data
-size_train = int(len(data_set) * 0.7) 
+size_train = int(len(data_set) * 0.3) 
 size_val = len(data_set) - size_train
 
 train_set, val_set = torch.utils.data.random_split(data_set, 
@@ -189,7 +192,7 @@ target_all = target_all.cpu()
 pred_prob_all = pred_prob_all.cpu() 
 
 r2 = r2_score(target_all, pred_prob_all)
-mae = mean_absolute_error(target_all.cpu(), pred_prob_all)
+mae = mean_absolute_error(target_all, pred_prob_all)
 rmse = mean_squared_error(target_all, pred_prob_all, squared=False)
 
 print("R2 Score: {:.4f}".format(r2))
@@ -201,8 +204,7 @@ print("RMSE: {:.4f}".format(rmse))
 
 plt.figure(figsize=(4, 4), dpi=100)
 plt.scatter(target_all, pred_prob_all, alpha=0.3)
-plt.plot([min(target_all), max(target_all)], [min(target_all),
-    max(target_all)], color="k", ls="--")
+plt.plot([min(target_all), max(target_all)], [min(target_all), max(target_all)], color="k", ls="--")
 plt.xlim([min(target_all), max(target_all)])
 plt.xlabel("True Values")
 plt.ylabel("Predicted Values")
@@ -217,5 +219,5 @@ plt.xlabel("Lipophilicity")
 plt.ylabel("N")
 plt.show()
 
-
+print("\n //// Process finished: %s seconds ////" % (time.time() - start_time))
 

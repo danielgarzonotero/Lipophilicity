@@ -1,4 +1,5 @@
 #%% Libraries
+import time
 import pandas as pd
 import torch 
 import torch.nn as nn
@@ -14,6 +15,7 @@ from sklearn.metrics import mean_squared_error
 from torch.utils.data import DataLoader, Dataset
 from torchmetrics.classification import BinaryConfusionMatrix
 
+start_time = time.time()
 #%% Device
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -163,7 +165,7 @@ k = data_set.classify
 bat_size = 60
 
 # important to use split for test data and validation data
-size_train = int(len(data_set) * 0.6) 
+size_train = int(len(data_set) * 0.3) 
 size_val = len(data_set) - size_train
 
 train_set, val_set = torch.utils.data.random_split(data_set, [size_train, size_val], generator=torch.Generator().manual_seed(0))
@@ -201,25 +203,23 @@ plt.ylabel('Losses')
 plt.show()
 
 
-#%% Model Statistics
+#%% Confussion Matrix
 input_all, target_all, pred_prob_all = predict(model, device, val_loader)
 
 target_all = target_all.cpu()
 pred_prob_all = pred_prob_all.cpu()
+
 bcm = BinaryConfusionMatrix()
 confussion_matrix = bcm(pred_prob_all, target_all)
 
 plt.matshow(confussion_matrix)
-plt.legend()
 plt.title('Confusion Matrix Plot')
 plt.colorbar()
-plt.xlabel('Predicted Negative (Reliable)    Predicted Positive (Unreliable)')
+plt.xlabel('Predicted Positive (Unreliable)     Predicted Negative (Reliable)')
 plt.ylabel('True Positive (Unreliable)        True Negative (Reliable)')
 plt.show()
 
 
 
 
-
-print("//////////////// hola mundo ////////////////")
-
+print("\n //// Process finished: %s seconds ////" % (time.time() - start_time))
