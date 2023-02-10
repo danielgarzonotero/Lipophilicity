@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import ConfusionMatrixDisplay
+
 from torch.utils.data import DataLoader, Dataset
 from torchmetrics.classification import BinaryConfusionMatrix
 
@@ -151,7 +151,7 @@ def predict(model, device, dataloader):
     return (
         torch.concat(input_vectors_all), 
         torch.concat(targets_all), 
-        torch.concat(pred_prob_all).view(-1))
+        torch.concat(pred_prob_all))
 
 
 
@@ -184,7 +184,7 @@ optimizer = optim.Adam(model.parameters(), lr = learning_rate)
 losses_train = []
 losses_val = []
 
-for epoch in range(1, 100): 
+for epoch in range(1, 50): 
     train_loss = train(model, device, train_loader, optimizer)
     losses_train.append(train_loss)
 
@@ -205,7 +205,18 @@ plt.show()
 input_all, target_all, pred_prob_all = predict(model, device, val_loader)
 
 target_all = target_all.cpu()
-pred_prob_all = pred_prob_all.cpu() 
+pred_prob_all = pred_prob_all.cpu()
+bcm = BinaryConfusionMatrix()
+confussion_matrix = bcm(pred_prob_all, target_all)
+
+plt.matshow(confussion_matrix)
+plt.legend()
+plt.title('Confusion Matrix Plot')
+plt.colorbar()
+plt.xlabel('Predicted Negative (Reliable)    Predicted Positive (Unreliable)')
+plt.ylabel('True Positive (Unreliable)        True Negative (Reliable)')
+plt.show()
+
 
 
 
