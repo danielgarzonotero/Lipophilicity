@@ -5,7 +5,11 @@ This code is a Python script that performs a training and evaluation routine for
 Prerequisites:
 
 -Python 3.x
+
 -PyTorch
+
 -pandas
+
 -matplotlib
+
 -scikit-learn
