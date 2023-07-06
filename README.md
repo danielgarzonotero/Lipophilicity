@@ -13,3 +13,10 @@ Prerequisites:
 -matplotlib
 
 -scikit-learn
+
+![image](https://github.com/danielgarzonotero/Lipophilicity/assets/122416545/d2487f09-c81f-40f9-850a-86a196a766dd)
+
+![image](https://github.com/danielgarzonotero/Lipophilicity/assets/122416545/50c041aa-07fc-4a41-86bb-04eb66d3d015)
+
+
+
