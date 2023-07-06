@@ -16,7 +16,8 @@ from torch.utils.data import DataLoader, Dataset
 from torchmetrics.classification import BinaryConfusionMatrix
 
 start_time = time.time()
-#%% Device
+
+# Device
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
     print("\n ///////// Running on the GPU /////////")
@@ -26,7 +27,7 @@ else:
 
 
 
-#%% DataSet
+# DataSet
 class Lipophilicity(Dataset):
     def __init__(self,path):
 
@@ -53,24 +54,33 @@ class Lipophilicity(Dataset):
 
 
 
-#%% Model  
+# Model  
 class Linear_Net(nn.Module): 
     
 
-    def __init__(self,input_size, hidden_size1, output_size): 
+    def __init__(self,
+                 input_size1, 
+                 hidden_size2,
+                 hidden_size3,
+                 output_size): 
         super(Linear_Net, self).__init__() 
 
-        self.fl1 = nn.Linear(input_size, hidden_size1)
-        self.fl2 = nn.Linear(hidden_size1, output_size) 
+        self.fl1 = nn.Linear(input_size1, hidden_size2)
+        self.fl2 = nn.Linear(hidden_size2, hidden_size3) 
+        self.fl3 = nn.Linear(hidden_size3, output_size) 
         
     def forward(self, x):
         out = self.fl1(x)
         out = F.relu(out) 
+        
         out = self.fl2(out)
+        out = F.relu(out)
+        
+        out = self.fl3(out)
         
         return out 
 
-#%% Train routine
+# Train routine
 
 def train(model, device, train_dataloader, optim): 
     model.train()
@@ -103,7 +113,7 @@ def train(model, device, train_dataloader, optim):
     return loss_collect
 
 
-#%% Validation Routine
+# Validation Routine
 
 def validate(model, device, val_dataloader, epoch): 
 
@@ -126,7 +136,7 @@ def validate(model, device, val_dataloader, epoch):
     return loss_collect
 
 
-#%% Prediction 
+# Prediction 
 def predict(model, device, dataloader):
 
     model.eval()
@@ -157,15 +167,15 @@ def predict(model, device, dataloader):
 
 
 
-#%% Data Loader
-data_set = Lipophilicity('lipo_processed.csv') 
+# Data Loader
+data_set = Lipophilicity('/home/vvd9fd/Documents/Bilodeau Group/Codes/3.0.Lipophilicity/lipo_processed.csv') 
 classify_split = data_set.mean_lipo
 k = data_set.classify
 
-bat_size = 60
+bat_size = 10
 
 # important to use split for test data and validation data
-size_train = int(len(data_set) * 0.3) 
+size_train = int(len(data_set) * 0.8) 
 size_val = len(data_set) - size_train
 
 train_set, val_set = torch.utils.data.random_split(data_set, [size_train, size_val], generator=torch.Generator().manual_seed(0))
@@ -174,19 +184,22 @@ train_loader = DataLoader(dataset = train_set, batch_size=bat_size, shuffle=True
 val_loader = DataLoader(dataset = val_set, batch_size=bat_size, shuffle=True)
 
 
-#%% Run training loop
+# Run training loop
 
-learning_rate = 0.0001
+learning_rate = 0.00001
 torch.manual_seed(0)
 
 
-model = Linear_Net(input_size=1024, hidden_size1=10, output_size=2).to(device)
+model = Linear_Net(input_size1=1024,
+                   hidden_size2=50,
+                   hidden_size3=10, 
+                   output_size=2).to(device)
 optimizer = optim.Adam(model.parameters(), lr = learning_rate) 
 
 losses_train = []
 losses_val = []
 
-for epoch in range(1, 50): 
+for epoch in range(1, 100): 
     train_loss = train(model, device, train_loader, optimizer)
     losses_train.append(train_loss)
 
@@ -203,7 +216,7 @@ plt.ylabel('Losses')
 plt.show()
 
 
-#%% Confussion Matrix
+# Confussion Matrix
 input_all, target_all, pred_prob_all = predict(model, device, val_loader)
 
 target_all = target_all.cpu()
@@ -215,11 +228,18 @@ confussion_matrix = bcm(pred_prob_all, target_all)
 plt.matshow(confussion_matrix)
 plt.title('Confusion Matrix Plot')
 plt.colorbar()
+
+# Añadir números a la matriz de confusión
+for i in range(confussion_matrix.shape[0]):
+    for j in range(confussion_matrix.shape[1]):
+        plt.text(j, i, str(confussion_matrix[i, j].numpy()), ha='center', va='center', color='black')
+
 plt.xlabel('Predicted Positive (Unreliable)     Predicted Negative (Reliable)')
 plt.ylabel('True Positive (Unreliable)        True Negative (Reliable)')
 plt.show()
 
 
 
-
 print("\n //// Process finished: %s seconds ////" % (time.time() - start_time))
+
+# %%
